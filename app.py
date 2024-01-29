@@ -29,9 +29,6 @@ def rest_tessdata():
         caminho_imagem = os.path.join(upload_folder, imagem.filename)
         imagem.save(caminho_imagem)
 
-        # Agora, você pode passar o caminho do arquivo para o subprocesso
-        app.logger.info("Executando o script rest_tessdata")
-
         # Baixar e configurar o Tesseract no Heroku
         pytesseract.pytesseract.tesseract_cmd = '/app/.apt/usr/bin/tesseract'
         tessdata_dir_config = '--tessdata-dir "/app/.apt/usr/share/tesseract-ocr/4.00/tessdata"'
@@ -49,7 +46,8 @@ def rest_tessdata():
         resultStr = resultStr.replace(" ", "").replace("\n", "")
         print(f'Tess: {resultStr}')
 
-        return jsonify({"message": "Executando o script rest_tessdata"})
+        app.logger.info(f"{resultStr}")
+        return jsonify({"message": f"{resultStr}"})
     except Exception as e:
         app.logger.error("Erro ao executar o script rest_tessdata: " + str(e))
         return jsonify({"error": str(e)}), 500
