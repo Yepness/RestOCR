@@ -1,7 +1,8 @@
 from flask import Flask, jsonify, request
-import subprocess
 import os
 import sys
+import cv2
+import pytesseract
 
 app = Flask(__name__)
 
@@ -31,9 +32,22 @@ def rest_tessdata():
         # Agora, você pode passar o caminho do arquivo para o subprocesso
         app.logger.info("Executando o script rest_tessdata")
 
-        # Dentro da rota /rest_tessdata
-        subprocess.Popen(['python', 'rest_tessdata.py', caminho_imagem], stdout=sys.stdout, stderr=sys.stderr)
-        app.logger.info("rest_tessdata em execução.")
+        # Baixar e configurar o Tesseract no Heroku
+        pytesseract.pytesseract.tesseract_cmd = '/app/.apt/usr/bin/tesseract'
+        tessdata_dir_config = '--tessdata-dir "/app/.apt/usr/share/tesseract-ocr/4.00/tessdata"'
+
+        #
+        config_tesseract = '--psm 1'  # Configuração de Page Segmentation Mode a ser utilizada.
+
+        # Realizar a leitura da imagem pelo OpenCV
+        img = cv2.imread(caminho_imagem)
+
+        # Transformar a imagem em texto tendo a saída em modo de string.
+        resultStr = pytesseract.image_to_string(img, config=config_tesseract, lang="eng")
+
+        # Remover espaços em branco e imprimir o resultado
+        resultStr = resultStr.replace(" ", "").replace("\n", "")
+        print(f'Tess: {resultStr}')
 
         return jsonify({"message": "Executando o script rest_tessdata"})
     except Exception as e:
