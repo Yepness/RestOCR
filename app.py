@@ -47,11 +47,8 @@ def rest_tessdata():
         resultStr = resultStr.replace(" ", "").replace("\n", "")
         print(f'Tess: {resultStr}')
 
-        # Escapar caracteres especiais para garantir uma serialização JSON adequada
-        resultStr_escaped = html.escape(resultStr)
-
         app.logger.info(f"{resultStr}")
-        return jsonify({"message": resultStr_escaped})
+        return resultStr
     
     except Exception as e:
         app.logger.error("Erro ao executar o script rest_tessdata: " + str(e))
