@@ -5,8 +5,9 @@ import pytesseract
 #
 caminho_imagem = sys.argv[1]
 
-# pytesseract on Heroku
-pytesseract.pytesseract.tesseract_cmd = "/app/.apt/usr/bin/tesseract"
+# Baixar e configurar o Tesseract no Heroku
+pytesseract.pytesseract.tesseract_cmd = '/app/.apt/usr/bin/tesseract'
+tessdata_dir_config = '--tessdata-dir "/app/.apt/usr/share/tesseract-ocr/4.00/tessdata"'
 
 #
 config_tesseract = '--psm 1'  # Configuração de Page Segmentation Mode a ser utilizada.
