@@ -47,8 +47,13 @@ def rest_tessdata():
         resultStr = resultStr.replace(" ", "").replace("\n", "")
         print(f'Tess: {resultStr}')
 
+        # Limpar a string resultante
+        resultF = resultStr.replace('\f', '').strip()
+
         app.logger.info(f"{resultStr}")
-        return resultStr
+
+        # Definir o tipo de conteúdo como texto
+        return resultF, 200, {'Content-Type': 'text/plain; charset=utf-8'}
     
     except Exception as e:
         app.logger.error("Erro ao executar o script rest_tessdata: " + str(e))
