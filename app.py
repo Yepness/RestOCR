@@ -46,8 +46,8 @@ def rest_tessdata():
         resultStr = resultStr.replace(" ", "").replace("\n", "")
         print(f'Tess: {resultStr}')
 
-        app.logger.info(f"{resultStr}")
-        return jsonify({"message": f"{resultStr}"})
+        app.logger.info({resultStr})
+        return jsonify({resultStr})
     except Exception as e:
         app.logger.error("Erro ao executar o script rest_tessdata: " + str(e))
         return jsonify({"error": str(e)}), 500
