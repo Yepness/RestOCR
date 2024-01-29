@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 import os
 import sys
 import html
@@ -6,6 +7,7 @@ import cv2
 import pytesseract
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/rest_tessdata', methods=['POST'])
 def rest_tessdata():
