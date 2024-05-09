@@ -26,20 +26,7 @@ Esta API fornece um serviço para realizar a extração de texto de imagens usan
 | 400    | Requisição inválida             | Mensagem de erro descrevendo o problema encontrado. |
 | 500    | Erro interno do servidor        | Mensagem de erro detalhada.                         |
 
-
-- ### Exemplo de uso (Python)
-
-import requests
-
-url = 'http://127.0.0.1:5000/rest_tessdata'
-files = {'image': open('example_image.jpg', 'rb')}
-data = {'type': 'data', 'conf': '70'}
-
-response = requests.post(url, files=files, data=data)
-print(response.json())
-
-
-- ### Requisição de Extração de Texto com Confiança Específica (type=data)
+## Requisição de Extração de Texto com Confiança Específica (type=data)
 
 POST /rest_tessdata
 Content-Type: multipart/form-data
@@ -56,7 +43,7 @@ Resposta (200 OK):
 ]
 
 
-- ### Requisição de Extração de Texto Geral (type=string)
+## Requisição de Extração de Texto Geral (type=string)
 
 POST /rest_tessdata
 Content-Type: multipart/form-data
@@ -68,7 +55,7 @@ Resposta (200 OK):
 "Texto extraído"
 
 
-- ### Observações
+## Observações
 
 Certifique-se de fornecer os parâmetros obrigatórios corretamente.
 
