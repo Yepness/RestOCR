@@ -107,7 +107,7 @@ def rest_tessdata():
             if os.path.exists(image_path):
                 os.remove(image_path)
 
-            # Definir o tipo de conteúdo como json
+            # Definir o tipo de conteúdo como text
             return (string), 200
     
     except Exception as e:
