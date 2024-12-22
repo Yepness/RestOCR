@@ -8,9 +8,9 @@ import pandas as pd
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/rest_tessdata', methods=['POST'])
+@app.route('/v1/RestOCR', methods=['POST'])
 def rest_tessdata():
-    app.logger.info("Rota '/rest_tessdata' acessada.")
+    app.logger.info("Rota '/v1/RestOCR' acessada.")
 
     keys_hg = ['image', 'type'] # Lista de parâmetros obrigatórios
     types_hg = ['data', 'string'] # Lista de possiveis valores type
