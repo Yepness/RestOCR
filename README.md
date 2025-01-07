@@ -8,7 +8,7 @@ Esta API fornece um serviço para realizar a extração de texto de imagens usan
 - POST
 
 ### URL
-- https://restocr-production.up.railway.app/rest_tessdata
+- https://localhost:5000/rest_tessdata
 
 ### Parâmetros de Requisição
 
