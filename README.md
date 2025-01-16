@@ -1,63 +1,68 @@
-# API de Extração de Texto com Tesseract
+# Text Extraction API with Tesseract
 
-## Descrição
-Esta API fornece um serviço para realizar a extração de texto de imagens usando a biblioteca Tesseract OCR (Optical Character Recognition). Através desta API, os usuários podem enviar uma imagem e escolher entre dois tipos de extração: 'data' para obter os resultados como uma lista de texto com base na confiabilidade especificada, ou 'string' para obter o texto extraído diretamente.
+## Description
+This API provides a service to extract text from images using the Tesseract OCR (Optical Character Recognition) library. Users can send an image and choose between two extraction types: 'data' to receive results as a list of text based on the specified confidence level, or 'string' to get the extracted text directly as a single string.
 
-## Uso
-### Método
+## Usage
+### Method
 - POST
 
 ### URL
 - https://localhost:5000/rest_tessdata
 
-### Parâmetros de Requisição
+### Request Parameters
 
-| Parâmetro | Tipo   | Descrição                                                                                                 |
-|-----------|--------|-----------------------------------------------------------------------------------------------------------|
-| image     | Arquivo| Imagem contendo o texto a ser extraído.                                                                   |
-| type      | String | Tipo de extração desejada. Pode ser 'data' ou 'string'.                                                   |
-| conf      | Inteiro| (Obrigatório se type=data) Nível de confiabilidade em porcentagem para a extração de texto. Entre 0 e 100.|
+| Parameter | Type    | Description                                                                                   |
+|-----------|---------|-----------------------------------------------------------------------------------------------|
+| image     | File    | Image containing the text to be extracted.                                                   |
+| type      | String  | Desired extraction type. Can be 'data' or 'string'.                                           |
+| conf      | Integer | (Required if type=data) Confidence level in percentage for text extraction. Ranges from 0 to 100. |
 
-### Respostas
+### Responses
 
-| Código | Descrição                       | Corpo da Resposta                                  |
-|--------|---------------------------------|-----------------------------------------------------|
-| 200    | Sucesso                         | Lista de strings (se type=data) ou texto (se type=string)  |
-| 400    | Requisição inválida             | Mensagem de erro descrevendo o problema encontrado. |
-| 500    | Erro interno do servidor        | Mensagem de erro detalhada.                         |
+| Status Code | Description                   | Response Body                                      |
+|-------------|-------------------------------|---------------------------------------------------|
+| 200         | Success                       | List of strings (if type=data) or text (if type=string) |
+| 400         | Invalid Request               | Error message describing the issue encountered.   |
+| 500         | Internal Server Error         | Detailed error message.                           |
 
-## Requisição de Extração de Texto com Confiança Específica (type=data)
+## Text Extraction Request with Specific Confidence (type=data)
 
-POST /rest_tessdata
-Content-Type: multipart/form-data
+**POST** /rest_tessdata  
+Content-Type: multipart/form-data  
 
-image: [arquivo de imagem]
+```plaintext
+image: [image file]
 type: data
 conf: 70
+```
 
-Resposta (200 OK):
+Response (200 OK):
+```json
 [
-    "Texto extraído 1",
-    "Texto extraído 2",
+    "Extracted text 1",
+    "Extracted text 2",
     ...
 ]
+```
 
+## General Text Extraction Request (type=string)
 
-## Requisição de Extração de Texto Geral (type=string)
+**POST** /rest_tessdata  
+Content-Type: multipart/form-data  
 
-POST /rest_tessdata
-Content-Type: multipart/form-data
-
-image: [arquivo de imagem]
+```plaintext
+image: [image file]
 type: string
+```
 
-Resposta (200 OK):
-"Texto extraído"
+Response (200 OK):
+```json
+"Extracted text"
+```
 
+## Notes
 
-## Observações
+Ensure that all required parameters are provided correctly.
 
-Certifique-se de fornecer os parâmetros obrigatórios corretamente.
-
-A confiabilidade (conf) é uma medida de quão confiável é a extração do texto. Quanto maior o valor, mais restrito será o texto extraído, enquanto valores mais baixos podem resultar em mais texto, incluindo possíveis erros.
-
+The confidence level (`conf`) measures how reliable the text extraction is. Higher values result in stricter filtering for reliable text, while lower values may include more text but could introduce potential errors.
