@@ -6,26 +6,41 @@ ENV PYTHON_VERSION=3.11
 ENV VIRTUAL_ENV=/app/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 ENV DEBIAN_FRONTEND=noninteractive
-ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata
+ENV TESSDATA_PREFIX="/usr/share/tesseract-ocr/5/tessdata"
 
-# Instala dependências básicas primeiro
+# Instala dependências básicas
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     gnupg2 \
     ca-certificates \
     software-properties-common \
-    && rm -rf /var/lib/apt/lists/*
+    build-essential \
+    autoconf \
+    automake \
+    libtool \
+    pkg-config \
+    libpng-dev \
+    libjpeg-dev \
+    libtiff-dev \
+    zlib1g-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Instala Tesseract OCR diretamente dos repositórios oficiais (evitando PPA instável)
+# Baixa e compila o Tesseract OCR 5.5.0
+RUN wget https://github.com/tesseract-ocr/tesseract/archive/refs/tags/5.5.0.tar.gz \
+    && tar -xzvf 5.5.0.tar.gz \
+    && cd tesseract-5.5.0 \
+    && ./autogen.sh \
+    && ./configure \
+    && make \
+    && make install \
+    && ldconfig
+
+# Instala pacotes adicionais e baixa treinamentos de idioma
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    tesseract-ocr \
-    libtesseract-dev \
     tesseract-ocr-por \
     tesseract-ocr-eng \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && wget -O /usr/share/tesseract-ocr/5/tessdata/por.traineddata https://github.com/tesseract-ocr/tessdata_best/raw/main/por.traineddata \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Instala Python 3.11 corretamente
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -33,8 +48,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.11-dev \
     python3.11-venv \
     python3-pip \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 \
     && update-alternatives --set python3 /usr/bin/python3.11
 
@@ -55,7 +69,8 @@ COPY . .
 # Verifica a instalação
 RUN tesseract --version && \
     python3 --version && \
-    pip list
+    pip list && \
+    ls -l /usr/share/tesseract-ocr/5/tessdata/
 
 # Comando para iniciar o servidor
 CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:443", "--timeout", "0"]
