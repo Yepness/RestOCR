@@ -1,61 +1,28 @@
-# Usamos Ubuntu 22.04 como base
-FROM ubuntu:22.04
+# Usamos a imagem base slim do Python 3.11
+FROM python:3.11-slim
 
-# Define variáveis de ambiente
-ENV PYTHON_VERSION=3.11
-ENV VIRTUAL_ENV=/app/venv
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-ENV DEBIAN_FRONTEND=noninteractive
-ENV TESSDATA_PREFIX="/usr/share/tesseract-ocr/5/tessdata"
-
-# Instala dependências básicas
+# Instala dependências necessárias para rodar AppImage
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    libglib2.0-0 \
+    libgl1-mesa-glx \
     wget \
-    gnupg2 \
     ca-certificates \
-    software-properties-common \
-    build-essential \
-    autoconf \
-    automake \
-    libtool \
-    pkg-config \
-    libpng-dev \
-    libjpeg-dev \
-    libtiff-dev \
-    zlib1g-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Baixa e compila o Tesseract OCR 5.5.0
-RUN wget https://github.com/tesseract-ocr/tesseract/archive/refs/tags/5.5.0.tar.gz \
-    && tar -xzvf 5.5.0.tar.gz \
-    && cd tesseract-5.5.0 \
-    && ./autogen.sh \
-    && ./configure \
-    && make \
-    && make install \
-    && ldconfig
+# Baixa e configura Tesseract OCR 5.5.0 AppImage
+RUN wget -O /usr/local/bin/tesseract https://github.com/AlexanderP/tesseract-appimage/releases/download/v5.5.0/tesseract-5.5.0-x86_64.AppImage \
+    && chmod +x /usr/local/bin/tesseract
 
-# Instala pacotes adicionais e baixa treinamentos de idioma
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    tesseract-ocr-por \
-    tesseract-ocr-eng \
-    && wget -O /usr/share/tesseract-ocr/5/tessdata/por.traineddata https://github.com/tesseract-ocr/tessdata_best/raw/main/por.traineddata \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Instala Python 3.11 corretamente
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.11 \
-    python3.11-dev \
-    python3.11-venv \
-    python3-pip \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* \
-    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 \
-    && update-alternatives --set python3 /usr/bin/python3.11
+# Verifica se Tesseract foi instalado corretamente
+RUN tesseract -v
 
 # Cria e ativa o ambiente virtual
-RUN python3 -m venv $VIRTUAL_ENV
+RUN python3 -m venv /app/venv
 
-# Copia os requisitos primeiro para aproveitar o cache de camadas
+# Adiciona o ambiente virtual ao PATH
+ENV PATH="/app/venv/bin:$PATH"
+
+# Copia os requisitos primeiro para otimizar cache
 COPY requirements.txt .
 
 # Instala dependências Python
@@ -65,12 +32,6 @@ RUN pip install --no-cache-dir --upgrade pip \
 
 # Copia o restante da aplicação
 COPY . .
-
-# Verifica a instalação
-RUN tesseract --version && \
-    python3 --version && \
-    pip list && \
-    ls -l /usr/share/tesseract-ocr/5/tessdata/
 
 # Comando para iniciar o servidor
 CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:443", "--timeout", "0"]
