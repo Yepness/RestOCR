@@ -1,4 +1,4 @@
-# Usamos Ubuntu 22.04 como base
+# Usamos Ubuntu 22.04 como base para ter acesso ao PPA do Tesseract mais recente
 FROM ubuntu:22.04
 
 # Define variáveis de ambiente
@@ -8,20 +8,22 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata
 
-# Instala dependências básicas primeiro
+# Instala dependências essenciais
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    software-properties-common \
     wget \
     gnupg2 \
     ca-certificates \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Método moderno para adicionar repositórios (sem apt-key deprecated)
+# Adiciona repositório do Tesseract de forma compatível
 RUN mkdir -p /etc/apt/keyrings \
-    && wget -O- https://ppa.launchpadcontent.net/alex-p/tesseract-ocr/ubuntu/KEY.gpg | gpg --dearmor > /etc/apt/keyrings/tesseract-ocr.gpg \
+    && wget -qO /etc/apt/keyrings/tesseract-ocr.gpg https://ppa.launchpadcontent.net/alex-p/tesseract-ocr/ubuntu/KEY.gpg \
     && echo "deb [signed-by=/etc/apt/keyrings/tesseract-ocr.gpg] https://ppa.launchpadcontent.net/alex-p/tesseract-ocr/ubuntu jammy main" > /etc/apt/sources.list.d/tesseract-ocr.list \
     && apt-get update
 
-# Instala todas as dependências restantes
+# Instala Python 3.11 e demais dependências
 RUN apt-get install -y --no-install-recommends \
     python3.11 \
     python3.11-dev \
@@ -41,7 +43,7 @@ RUN apt-get install -y --no-install-recommends \
 # Cria e ativa o ambiente virtual
 RUN python3 -m venv $VIRTUAL_ENV
 
-# Copia os requisitos primeiro para aproveitar o cache de camadas
+# Copia os requisitos para aproveitar cache de camadas
 COPY requirements.txt .
 
 # Instala dependências Python
@@ -49,13 +51,13 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir uvicorn==0.20.0
 
-# Copia o restante da aplicação
+# Copia o restante do código-fonte da aplicação
 COPY . .
 
-# Verifica a instalação
+# Verificação das versões instaladas
 RUN tesseract --version && \
     python3 --version && \
     pip list
 
-# Comando para iniciar o servidor
+# Define comando para iniciar o servidor
 CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:443", "--timeout", "0"]
