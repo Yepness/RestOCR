@@ -6,6 +6,7 @@ ENV PYTHON_VERSION=3.11
 ENV VIRTUAL_ENV=/app/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 ENV DEBIAN_FRONTEND=noninteractive
+ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata
 
 # Instala dependências básicas primeiro
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -14,9 +15,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Adiciona o repositório do Tesseract manualmente (evitando add-apt-repository)
-RUN echo "deb http://ppa.launchpad.net/alex-p/tesseract-ocr/ubuntu jammy main" > /etc/apt/sources.list.d/tesseract-ocr.list \
-    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EFFCAF903645B99FA4163FE8C2508BC3A788ED1 \
+# Método moderno para adicionar repositórios (sem apt-key deprecated)
+RUN mkdir -p /etc/apt/keyrings \
+    && wget -O- https://ppa.launchpadcontent.net/alex-p/tesseract-ocr/ubuntu/KEY.gpg | gpg --dearmor > /etc/apt/keyrings/tesseract-ocr.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/tesseract-ocr.gpg] https://ppa.launchpadcontent.net/alex-p/tesseract-ocr/ubuntu jammy main" > /etc/apt/sources.list.d/tesseract-ocr.list \
     && apt-get update
 
 # Instala todas as dependências restantes
@@ -50,8 +52,10 @@ RUN pip install --no-cache-dir --upgrade pip \
 # Copia o restante da aplicação
 COPY . .
 
-# Verifica a versão do Tesseract (para confirmação)
-RUN tesseract --version
+# Verifica a instalação
+RUN tesseract --version && \
+    python3 --version && \
+    pip list
 
 # Comando para iniciar o servidor
 CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:443", "--timeout", "0"]
